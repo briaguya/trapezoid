@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useRef, useLayoutEffect, useState } from 'react';
 import { Shaders, Node, GLSL } from 'gl-react';
 import { Surface } from 'gl-react-dom';
 import timeLoop from './GlReactTimeLoop';
@@ -52,25 +52,64 @@ const Vignette = timeLoop(({ children: t, time, mouse }) => (
   />
 ));
 
-export default class Trapezoid extends Component {
-  state = {
-    mouse: [0.5, 0.5]
+const Trapezoid = props => {
+  const targetRef = useRef();
+  const [dimensions, setDimensions] = useState({});
+  const [mouse, setMouse] = useState([0.5, 0.5]);
+
+  // holds the timer for setTimeout and clearInterval
+  let movement_timer = null;
+
+  // the number of ms the window size must stay the same size before the
+  // dimension state variable is reset
+  const RESET_TIMEOUT = 100;
+
+  const test_dimensions = () => {
+    // For some reason targetRef.current.getBoundingClientRect was not available
+    // I found this worked for me, but unfortunately I can't find the
+    // documentation to explain this experience
+    if (targetRef.current) {
+      setDimensions({
+        width: targetRef.current.offsetWidth,
+        height: targetRef.current.offsetHeight
+      });
+    }
   };
-  render() {
-    const { mouse } = this.state;
-    return (
-      <Surface width={500} height={400} onMouseMove={this.onMouseMove}>
+
+  // This sets the dimensions on the first render
+  useLayoutEffect(() => {
+    test_dimensions();
+  }, []);
+
+  // every time the window is resized, the timer is cleared and set again
+  // the net effect is the component will only reset after the window size
+  // is at rest for the duration set in RESET_TIMEOUT.  This prevents rapid
+  // redrawing of the component for more complex components such as charts
+  window.addEventListener('resize', () => {
+    clearInterval(movement_timer);
+    movement_timer = setTimeout(test_dimensions, RESET_TIMEOUT);
+  });
+
+  return (
+    <div ref={targetRef}>
+      <p>{dimensions.width}</p>
+      <p>{dimensions.height}</p>
+      <Surface
+        width={500}
+        height={400}
+        onMouseMove={e => {
+          const rect = e.target.getBoundingClientRect();
+          const new_mouse = [
+            (e.clientX - rect.left) / rect.width,
+            (rect.bottom - e.clientY) / rect.height
+          ];
+          setMouse(new_mouse);
+        }}
+      >
         <Vignette mouse={mouse}>https://i.imgur.com/2VP5osy.jpg</Vignette>
       </Surface>
-    );
-  }
-  onMouseMove = e => {
-    const rect = e.target.getBoundingClientRect();
-    this.setState({
-      mouse: [
-        (e.clientX - rect.left) / rect.width,
-        (rect.bottom - e.clientY) / rect.height
-      ]
-    });
-  };
-}
+    </div>
+  );
+};
+
+export default Trapezoid;
