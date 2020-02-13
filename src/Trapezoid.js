@@ -11,6 +11,7 @@ varying vec2 uv;
 uniform sampler2D t;
 uniform vec2 mouse;
 uniform float time, amp, freq, moving;
+
 vec2 lookup (vec2 offset, float amp2) {
   return mod(
     uv + amp2 * amp * vec2(
@@ -28,12 +29,13 @@ void main() {
   vec2 orientation = vec2(1.0, 0.0);
   float a = (1.0-min(0.95, pow(1.8 * distance(uv, mouse), 4.0) +
   0.5 * pow(distance(fract(50.0 * uv.y), 0.5), 2.0)));
+
   gl_FragColor = mix(vec4(a * vec3(
     texture2D(t, lookup(colorSeparation * orientation, amp2)).r,
     texture2D(t, lookup(-colorSeparation * orientation, amp2)).g,
     texture2D(t, lookup(vec2(0.0), amp2)).b),
     1.0),   vec4(0.0),
-  step(0.5, abs(uv.x - 0.5) + abs(uv.y - 0.5)));
+  step(0.5, 0.0, 0.5, 0.0));
 }
 `
   }
@@ -86,17 +88,22 @@ const Trapezoid = props => {
   // the net effect is the component will only reset after the window size
   // is at rest for the duration set in RESET_TIMEOUT.  This prevents rapid
   // redrawing of the component for more complex components such as charts
-  // window.addEventListener('resize', () => {
-  //   clearInterval(movement_timer);
-  //   movement_timer = setTimeout(test_dimensions, RESET_TIMEOUT);
-  // });
+  window.addEventListener('resize', () => {
+    clearInterval(movement_timer);
+    movement_timer = setTimeout(test_dimensions, RESET_TIMEOUT);
+  });
 
   // debugger;
+  const size =
+    dimensions.width > window.innerHeight
+      ? window.innerHeight
+      : dimensions.width;
+
   return (
     <div ref={targetRef}>
       <Surface
-        width={dimensions.width}
-        height={dimensions.width}
+        width={size}
+        height={size}
         onMouseMove={e => {
           const rect = e.target.getBoundingClientRect();
           const new_mouse = [
