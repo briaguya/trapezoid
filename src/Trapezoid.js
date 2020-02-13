@@ -86,17 +86,16 @@ const Trapezoid = props => {
   // the net effect is the component will only reset after the window size
   // is at rest for the duration set in RESET_TIMEOUT.  This prevents rapid
   // redrawing of the component for more complex components such as charts
-  window.addEventListener('resize', () => {
-    clearInterval(movement_timer);
-    movement_timer = setTimeout(test_dimensions, RESET_TIMEOUT);
-  });
+  // window.addEventListener('resize', () => {
+  //   clearInterval(movement_timer);
+  //   movement_timer = setTimeout(test_dimensions, RESET_TIMEOUT);
+  // });
 
+  // debugger;
   return (
     <div ref={targetRef}>
-      <p>{dimensions.width}</p>
-      <p>{dimensions.height}</p>
       <Surface
-        width={500}
+        width={dimensions.width}
         height={400}
         onMouseMove={e => {
           const rect = e.target.getBoundingClientRect();
