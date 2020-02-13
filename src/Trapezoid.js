@@ -96,7 +96,7 @@ const Trapezoid = props => {
     <div ref={targetRef}>
       <Surface
         width={dimensions.width}
-        height={400}
+        height={dimensions.width}
         onMouseMove={e => {
           const rect = e.target.getBoundingClientRect();
           const new_mouse = [
@@ -106,7 +106,7 @@ const Trapezoid = props => {
           setMouse(new_mouse);
         }}
       >
-        <Vignette mouse={mouse}>https://i.imgur.com/2VP5osy.jpg</Vignette>
+        <Vignette mouse={mouse}>https://i.imgur.com/a4gTqh0.png</Vignette>
       </Surface>
     </div>
   );
